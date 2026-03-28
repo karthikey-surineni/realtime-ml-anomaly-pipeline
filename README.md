@@ -145,7 +145,7 @@ This PoC uses Binance market data as a **proxy for player activity**. The archit
 
 ## Kappa vs Lambda Architecture
 
-The interview prep specifically calls out this trade-off. Here's how to discuss it:
+A key architectural trade-off for any real-time ML system:
 
 ### Lambda Architecture (Batch + Speed layers)
 ```
@@ -168,13 +168,13 @@ Event Source ──── Stream Layer (Kinesis/Kafka + Flink) ──── Serv
 - **Cons**: Requires durable, replayable stream (Kafka with long retention); harder for complex batch aggregations
 - **When to use**: When the stream is the source of truth and reprocessing can be done by replaying
 
-### What to recommend for EasyGo
+### Recommended Approach for Churn Prediction
 
-> "For the churn prediction pipeline, I'd recommend a **Kappa architecture** with a caveat. Player events flow through MSK (Kafka) — this is the single source of truth. Flink computes streaming features (session counts, deposit velocity) and writes to SageMaker Feature Store's online store. For batch retraining, we replay from Kafka or read from the Feature Store's offline store (backed by S3). This gives us one codebase for feature engineering. The exception is User Story 1 (batch ingestion from third-party providers) — that's inherently batch and should use a traditional ETL path (Glue + S3 + Athena), not forced through a stream."
+> "For a churn prediction pipeline, I'd recommend a **Kappa architecture** with a caveat. Player events flow through MSK (Kafka) — this is the single source of truth. Flink computes streaming features (session counts, deposit velocity) and writes to SageMaker Feature Store's online store. For batch retraining, we replay from Kafka or read from the Feature Store's offline store (backed by S3). This gives us one codebase for feature engineering. The exception is batch ingestion from third-party providers — that's inherently batch and should use a traditional ETL path (Glue + S3 + Athena), not forced through a stream."
 
 ---
 
-## Interview Talking Points for User Story 3
+## Design Discussion: Player Churn Prediction & Retention
 
 ### 1. Feature Engineering Pipeline
 > "I built a rolling window feature engine using Polars that computes rate-of-change, z-scores, and spread in real-time. In production, this maps to Flink on Kinesis computing streaming features per player — session frequency over 7/14/30 day windows, deposit velocity, bet-to-session ratio. These write to SageMaker Feature Store's online store for real-time scoring and offline store for batch training."
