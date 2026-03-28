@@ -22,6 +22,7 @@ class Settings(BaseSettings):
 
     # Logging
     log_level: str = "INFO"
+    log_json: bool = False
 
 
 settings = Settings()

@@ -17,7 +17,7 @@ from anomaly_pipeline.storage.sqlite_writer import init_db, write_anomaly
 
 def main() -> None:
     """Entry point for the anomaly-pipeline CLI command."""
-    setup_logging(log_level=settings.log_level)
+    setup_logging(log_level=settings.log_level, json_output=settings.log_json)
     logger = structlog.get_logger(__name__)
     logger.info("anomaly_pipeline_starting", symbol=settings.symbol, interval=settings.kline_interval)
 
